@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Switcher with Animations</title>
+    <style>
+        /* Base styles */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --text-color: #333;
+            --bg-color: #f5f5f5;
+            --card-bg: #fff;
+            --transition-speed: 0.5s;
+        }
+
+        /* Dark theme variables */
+        .dark-theme {
+            --primary-color: #9b59b6;
+            --secondary-color: #34495e;
+            --text-color: #f5f5f5;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color var(--transition-speed), 
+                        color var(--transition-speed);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            transition: color var(--transition-speed);
+        }
+
+        /* Card styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: background-color var(--transition-speed),
+                        transform 0.3s ease,
+                        box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Button styles with animations */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, 
+                        transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        /* Button ripple effect animation */
+        .btn::after {
+            content: '';
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            margin-top: -50px;
+            margin-left: -50px;
+            top: 50%;
+            left: 50%;
+            transform: scale(0);
+            opacity: 1;
+            transition: transform 0.8s, opacity 0.8s;
+        }
+
+        .btn.animate::after {
+            animation: ripple 0.8s;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Theme icon animation */
+        .theme-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            transition: transform 0.6s ease;
+        }
+
+        .theme-icon.spin {
+            animation: spin 0.6s ease-in-out;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Preferences section */
+        .preferences {
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            transition: background-color var(--transition-speed);
+        }
+
+        .preference-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: bottom 0.5s ease;
+        }
+
+        .notification.show {
+            bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="theme-icon" id="themeIcon">☀️</div>
+        <h1>Theme Switcher Demo</h1>
+        
+        <div class="card">
+            <p>This is a simple demo of a theme switcher that uses:</p>
+            <ul style="text-align: left;">
+                <li>CSS transitions and animations</li>
+                <li>localStorage for saving preferences</li>
+                <li>JavaScript to handle user interactions</li>
+            </ul>
+            <button class="btn" id="themeToggle">Toggle Theme</button>
+        </div>
+
+        <div class="preferences">
+            <h2>User Preferences</h2>
+            <div class="preference-item">
+                <label for="transitionSpeed">Animation Speed:</label>
+                <select id="transitionSpeed">
+                    <option value="0.3s">Fast</option>
+                    <option value="0.5s">Medium</option>
+                    <option value="1s">Slow</option>
+                </select>
+            </div>
+            <div class="preference-item">
+                <label for="savePrefs">Save Preferences:</label>
+                <input type="checkbox" id="savePrefs" checked>
+            </div>
+            <button class="btn" id="saveButton">Save Settings</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Settings saved!</div>
+
+    <script>
+        // DOM Elements
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const transitionSpeed = document.getElementById('transitionSpeed');
+        const savePrefs = document.getElementById('savePrefs');
+        const saveButton = document.getElementById('saveButton');
+        const notification = document.getElementById('notification');
+
+        // User preferences object
+        let userPreferences = {
+            darkMode: false,
+            transitionSpeed: '0.5s',
+            savePreferences: true
+        };
+
+        // Function to load preferences from localStorage
+        function loadPreferences() {
+            const savedPrefs = localStorage.getItem('themePreferences');
+            if (savedPrefs) {
+                try {
+                    userPreferences = JSON.parse(savedPrefs);
+                    
+                    // Apply saved preferences
+                    if (userPreferences.darkMode) {
+                        body.classList.add('dark-theme');
+                        themeIcon.textContent = '🌙';
+                    }
+                    
+                    document.documentElement.style.setProperty('--transition-speed', userPreferences.transitionSpeed);
+                    transitionSpeed.value = userPreferences.transitionSpeed;
+                    savePrefs.checked = userPreferences.savePreferences;
+                    
+                    console.log('Preferences loaded:', userPreferences);
+                } catch (error) {
+                    console.error('Error loading preferences:', error);
+                }
+            }
+        }
+
+        // Function to save preferences to localStorage
+        function savePreferences() {
+            if (userPreferences.savePreferences) {
+                localStorage.setItem('themePreferences', JSON.stringify(userPreferences));
+                showNotification();
+                console.log('Preferences saved:', userPreferences);
+            } else {
+                localStorage.removeItem('themePreferences');
+                console.log('Preferences cleared');
+            }
+        }
+
+        // Function to toggle theme with animation
+        function toggleTheme() {
+            // Add button ripple effect
+            addRippleEffect(themeToggle);
+            
+            // Toggle dark mode state
+            userPreferences.darkMode = !userPreferences.darkMode;
+            
+            // Add spin animation to the theme icon
+            themeIcon.classList.add('spin');
+            
+            // Toggle dark theme class on body
+            setTimeout(() => {
+                body.classList.toggle('dark-theme');
+                themeIcon.textContent = body.classList.contains('dark-theme') ? '🌙' : '☀️';
+            }, 300);
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                themeIcon.classList.remove('spin');
+            }, 600);
+            
+            // Save preferences if enabled
+            if (userPreferences.savePreferences) {
+                savePreferences();
+            }
+        }
+
+        // Function to add ripple effect animation to buttons
+        function addRippleEffect(button) {
+            button.classList.remove('animate');
+            // Trigger reflow to restart animation
+            void button.offsetWidth;
+            button.classList.add('animate');
+        }
+
+        // Function to show notification
+        function showNotification() {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Event Listeners
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        saveButton.addEventListener('click', () => {
+            addRippleEffect(saveButton);
+            
+            // Update preferences from UI
+            userPreferences.transitionSpeed = transitionSpeed.value;
+            userPreferences.savePreferences = savePrefs.checked;
+            
+            // Apply transition speed
+            document.documentElement.style.setProperty('--transition-speed', userPreferences.transitionSpeed);
+            
+            // Save to localStorage
+            savePreferences();
+        });
+
+        // Initialize the app
+        loadPreferences();
+    </script>
+</body>
+</html>
